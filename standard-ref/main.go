@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	// "strings"
+	"sync"
 	"time"
 	"standardref/helper"
 )
@@ -169,6 +170,7 @@ func printNumbers(n int) {
 		fmt.Println("Number:",i)
 		time.Sleep(100* time.Millisecond) //Timepass
 	}
+	wg.Done()
 }
 
 // Taking user input
@@ -197,6 +199,7 @@ func loopAndCondish(x int) {
 	}
 }
 
+var wg = sync.WaitGroup{}
 
 func main() {
 	fmt.Println("This is the main function")
@@ -230,9 +233,11 @@ func main() {
 
 
 	fmt.Println("\n\nGoroutine stuff")
+	wg.Add(1)
 	go printNumbers(5)
 	fmt.Println("GoRoutine started")
 	time.Sleep(1 * time.Second)
+	wg.Wait()
 	fmt.Println("MAIN IS OVER")
 
 }
