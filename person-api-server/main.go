@@ -2,6 +2,8 @@
 package main
 
 import (
+
+	"time"
 	"fmt"
 	"log"
 	"net/http"
@@ -27,8 +29,15 @@ type Address struct {
 // people is a global variable that stores a list of people.
 var people []Person
 
+// LogRequest logs the request method and URL path.
+func LogRequest(r *http.Request) {
+	log.Printf("Method: %s, Path:%s, User-Agent: %s, Time: %s", r.Method, r.URL.Path, r.UserAgent(), time.Now().Format(time.RFC3339))
+}
+
+
 // GetPersonEndpoint handles the "/people/get" endpoint and returns a person based on the provided ID.
 func GetPersonEndpoint(w http.ResponseWriter, req *http.Request) {
+	LogRequest(req)
 	id := req.URL.Query().Get("id")
 	for _, item := range people {
 		if item.ID == id {
@@ -42,11 +51,13 @@ func GetPersonEndpoint(w http.ResponseWriter, req *http.Request) {
 
 // GetPeopleEndpoint handles the "/people" endpoint and returns all people.
 func GetPeopleEndpoint(w http.ResponseWriter, req *http.Request) {
+	LogRequest(req)
 	json.NewEncoder(w).Encode(people)
 }
 
 // CreatePersonEndpoint handles the "/people/create" endpoint and creates a new person.
 func CreatePersonEndpoint(w http.ResponseWriter, req *http.Request) {
+	LogRequest(req)
 	var person Person
 	_ = json.NewDecoder(req.Body).Decode(&person)
 	person.ID = fmt.Sprintf("%d", len(people)+1)
@@ -56,6 +67,7 @@ func CreatePersonEndpoint(w http.ResponseWriter, req *http.Request) {
 
 // DeletePersonEndpoint handles the "/people/delete" endpoint and deletes a person based on the provided ID.
 func DeletePersonEndpoint(w http.ResponseWriter, req *http.Request) {
+	LogRequest(req)
 	id := req.URL.Query().Get("id")
 	for index, item := range people {
 		if item.ID == id {
@@ -66,8 +78,12 @@ func DeletePersonEndpoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(people)
 }
 
-// main function initializes mock data, sets up routes, and starts the HTTP server.
-func main() {
+// PreBake is a function that initializes mock data and sets up logging.
+func PreBake() {
+
+	// HandleLogFormat
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	// Mock data
 	people = append(people, Person{ID: "1", Firstname: "Shreyas", Lastname: "Gune", Address: &Address{City: "Falls Church", State: "Virginia"}})
 	people = append(people, Person{ID: "2", Firstname: "Kenshi", Lastname: "Himura"})
@@ -82,6 +98,13 @@ func main() {
 	prom.MetricsEndpoint()
 	http.Handle("/metrics", promhttp.Handler())
 
+}
+
+// main function initializes mock data, sets up routes, and starts the HTTP server.
+func main() {
+	
+	PreBake()
+	
 	// Start the server
 	log.Fatal(http.ListenAndServe(":2112", nil))
 }
