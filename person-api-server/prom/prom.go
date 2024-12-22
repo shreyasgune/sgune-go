@@ -1,3 +1,4 @@
+// Package prom provides function to create prometheus metrics
 package prom
 
 import(
@@ -6,7 +7,7 @@ import(
   "github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-// Prometheus Metrics
+// MetricsEndpoint function creates a counter metric and increments it every 2 seconds
 func MetricsEndpoint() {
 	go func() {
 	  for {
@@ -15,7 +16,8 @@ func MetricsEndpoint() {
 	  }
 	}()
 }
-  
+
+// opsProcessed is a counter metric that counts the number of processed events
 var (
 	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
 	  Name: "person_api_server_processed_ops_total",

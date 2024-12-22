@@ -1,6 +1,28 @@
 # Go
 Golang, also known as Go, is a statically typed, compiled programming language designed by Google. It was created by Robert Griesemer, Rob Pike, and Ken Thompson in 2007 and released publicly in 2009. Go is particularly popular for its simplicity, performance, and suitability for modern software development needs like concurrency, microservices, and cloud-native applications.
 
+## Setting up Locally
+```
+Install goenv
+
+$ goenv install 1.23
+$ goenv global 1.23
+$ eval "$(goenv init -)"
+
+```
+
+## Docs setup
+```
+go install golang.org/x/tools/cmd/godoc@latest
+go install github.com/robertkrimen/godocdown/godocdown@latest
+
+export PATH=$PATH:$(go env GOPATH)/bin
+
+```
+
+## [API Server Example](person-api-server/README.md)
+`docker run -p 8080:2112 -d --name person-api-server shreyasgune/gman-go-server`
+
 ## Features
 - Go’s lightweight threads (goroutines) and channels simplify concurrent programming.
 
