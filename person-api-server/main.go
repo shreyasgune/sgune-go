@@ -1,11 +1,12 @@
 package main
 
 import(
+  "fmt"
   "log"
   "net/http"
   "encoding/json"
-
-  "github.com/gorilla/mux"
+  "github.com/prometheus/client_golang/prometheus/promhttp"
+  "personApi/prom"
 )
 
 type Person struct {
@@ -25,9 +26,9 @@ type Address struct {
 var people []Person
 
 func GetPersonEndpoint(w http.ResponseWriter, req *http.Request) {
-  params := mux.Vars(req)
-  for _, item:= range people {
-    if item.ID == params["id"]{
+  id:= req.URL.Query().Get("id")
+  for _, item := range people {
+    if item.ID == id {
       json.NewEncoder(w).Encode(item)
       return
     }
@@ -35,31 +36,28 @@ func GetPersonEndpoint(w http.ResponseWriter, req *http.Request) {
   json.NewEncoder(w).Encode(&Person{})
 }
 
+
 func GetPeopleEndpoint(w http.ResponseWriter, req *http.Request) {
   json.NewEncoder(w).Encode(people)
-
 }
 
 func CreatePersonEndpoint(w http.ResponseWriter, req *http.Request) {
-  params := mux.Vars(req)
   var person Person
   _ = json.NewDecoder(req.Body).Decode(&person)
-  person.ID = params["id"]
+  person.ID = fmt.Sprintf("%d", len(people)+1)
   people = append(people,person)
   json.NewEncoder(w).Encode(people)
-
 }
 
 func DeletePersonEndpoint(w http.ResponseWriter, req *http.Request) {
-  params := mux.Vars(req)
+  id := req.URL.Query().Get("id")
   for index,item := range people {
-    if item.ID == params["id"] {
+    if item.ID == id {
       people = append(people[:index], people[index+1:]...)
       break
     }
   }
   json.NewEncoder(w).Encode(people)
-
 }
 
 
@@ -71,11 +69,15 @@ func main(){
 
 
 
-  router := mux.NewRouter()
-  router.HandleFunc("/people", GetPeopleEndpoint).Methods("GET")
-  router.HandleFunc("/people/{id}", GetPersonEndpoint).Methods("GET")
-  router.HandleFunc("/people/{id}", CreatePersonEndpoint).Methods("POST")
-  router.HandleFunc("/people/{id}", DeletePersonEndpoint).Methods("DELETE")
+  http.HandleFunc("/people", GetPeopleEndpoint)
+  http.HandleFunc("/people/create", CreatePersonEndpoint)
+  http.HandleFunc("/people/delete", DeletePersonEndpoint)
+  http.HandleFunc("/people/get", GetPersonEndpoint)
 
-  log.Fatal(http.ListenAndServe(":12345", router))
+
+  //Prometheus Handler
+  prom.MetricsEndpoint()
+  http.Handle("/metrics", promhttp.Handler())
+  log.Fatal(http.ListenAndServe(":2112", nil))
+
 }
