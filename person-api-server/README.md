@@ -2,6 +2,40 @@
 
 `person-api-server` is a simple HTTP server for managing people and integrating with Prometheus metrics.
 
+## Testing Curl Commands
+```
+curl -X GET http://localhost:2112/people
+
+curl -X GET "http://localhost:2112/people/get?id=1"
+
+curl -X POST http://localhost:2112/people/create \
+     -H "Content-Type: application/json" \
+     -d '{
+           "firstname": "Alice",
+           "lastname": "Smith",
+           "address": {
+               "city": "New York",
+               "state": "NY"
+           }
+         }'
+
+curl -X PUT http://localhost:2112/people/update?id=1 \
+     -H "Content-Type: application/json" \
+     -d '{
+           "firstname": "Alice",
+           "lastname": "Johnson",
+           "address": {
+               "city": "Los Angeles",
+               "state": "CA"
+           }
+         }'
+
+curl -X DELETE "http://localhost:2112/people/delete?id=1"
+
+
+```
+
+
 ## Package main
 
 ```go
@@ -124,10 +158,10 @@ Package prom provides function to create prometheus metrics
 
 ## Usage
 
-#### func  MetricsEndpoint
+#### func  OpsProcessed
 
 ```go
-func MetricsEndpoint()
+func OpsProcessed()
 ```
-MetricsEndpoint function creates a counter metric and increments it every 2
+OpsProcessed function creates a counter metric and increments it every 2
 seconds
